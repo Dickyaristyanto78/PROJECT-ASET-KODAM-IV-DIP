@@ -1114,69 +1114,15 @@ const DataAsetTanahPage = () => {
 
     const toastId = toast.loading("Menyimpan perubahan...");
     try {
+      const formData = new FormData();
+
       // Get the selected kodim name for saving
       const selectedKodimObj = kodimList.find((k) => k.id === selectedKodim);
-      const kodimName = selectedKodimObj
-        ? selectedKodimObj.nama
-        : selectedKodim;
-
-      // Handle file upload if there's a new file
-      let fileUploadData = {};
-
-      console.log("Checking file upload:", assetData.bukti_pemilikan_file);
-
-      if (
-        assetData.bukti_pemilikan_file &&
-        assetData.bukti_pemilikan_file instanceof File
-      ) {
-        const formData = new FormData();
-        formData.append("bukti_pemilikan", assetData.bukti_pemilikan_file);
-
-        console.log("Uploading file:", assetData.bukti_pemilikan_file.name);
-
-        try {
-          const uploadRes = await axios.post(
-            `${API_URL}/upload/bukti-pemilikan`,
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              timeout: 30000, // 30 seconds timeout
-            }
-          );
-
-          console.log("Upload response:", uploadRes.data);
-
-          fileUploadData = {
-            bukti_pemilikan_url: uploadRes.data.url,
-            bukti_pemilikan_filename: uploadRes.data.filename,
-          };
-
-          toast.success("File berhasil diupload", { id: toastId });
-        } catch (uploadErr) {
-          console.error("File upload failed:", uploadErr);
-          let errorMsg = "Gagal mengupload file bukti pemilikan";
-
-          if (uploadErr.response) {
-            errorMsg += `: ${uploadErr.response.status} - ${
-              uploadErr.response.data?.message || uploadErr.response.statusText
-            }`;
-          } else if (uploadErr.request) {
-            errorMsg += ": Tidak ada respons dari server";
-          } else {
-            errorMsg += `: ${uploadErr.message}`;
-          }
-
-          toast.error(errorMsg, { id: toastId });
-          return;
-        }
-      }
+      const kodimName = selectedKodimObj ? selectedKodimObj.nama : selectedKodim;
 
       // Gabungkan data form dengan data lokasi yang baru jika ada
       const finalData = {
         ...assetData,
-        ...fileUploadData,
         ...(editedLocationData && {
           lokasi: editedLocationData.geometry || editedLocationData.coordinates,
           luas: editedLocationData.area,
@@ -1186,13 +1132,38 @@ const DataAsetTanahPage = () => {
         kodim: kodimName || editingAsset.kodim,
       };
 
-      console.log("Saving asset data:", finalData);
+      // Append all data to formData
+      for (const key in finalData) {
+        // Jangan append file object ke form data secara langsung di loop ini
+        if (key === 'bukti_pemilikan_file') continue;
+        
+        const value = finalData[key];
+        // Handle null/undefined values and objects
+        if (value !== null && value !== undefined) {
+            if (typeof value === 'object' && !(value instanceof File)) {
+                // Kirim objek (seperti lokasi) sebagai string JSON
+                formData.append(key, JSON.stringify(value));
+            } else {
+                formData.append(key, value);
+            }
+        }
+      }
+
+      // Append the new file if it exists
+      if (assetData.bukti_pemilikan_file && assetData.bukti_pemilikan_file instanceof File) {
+        formData.append('bukti_pemilikan', assetData.bukti_pemilikan_file);
+      }
+
+      console.log("Menyimpan aset dengan FormData...");
 
       const response = await axios.put(
         `${API_URL}/assets/${editingAsset.id}`,
-        finalData,
+        formData,
         {
-          timeout: 15000, // 15 seconds timeout
+          headers: {
+            // Axios akan set Content-Type ke multipart/form-data secara otomatis
+          },
+          timeout: 30000, // Tingkatkan timeout untuk upload file
         }
       );
 

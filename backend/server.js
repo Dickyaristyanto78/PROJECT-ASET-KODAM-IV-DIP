@@ -1,6 +1,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // Impor rute
 const assetRoutes = require('./routes/assets');
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 3002;
 // Middleware
 app.use(cors()); // Mengizinkan Cross-Origin Resource Sharing
 app.use(express.json()); // Mengizinkan parsing body JSON dari request
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Menyajikan file statis dari folder 'uploads'
 
 // Rute Dasar
 app.get('/', (req, res) => {

@@ -1,4 +1,3 @@
-
 const pool = require('../db');
 
 // Fungsi helper untuk parse lokasi JSON
@@ -17,7 +16,7 @@ const parseAssetLocation = (asset) => {
 // Mengambil semua aset
 const getAllAssets = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM assets');
+    const [rows] = await pool.query('SELECT * FROM assets ORDER BY created_at DESC');
     const assets = rows.map(parseAssetLocation);
     res.status(200).json(assets);
   } catch (error) {
@@ -42,15 +41,55 @@ const getAssetById = async (req, res) => {
 
 // Membuat aset baru
 const createAsset = async (req, res) => {
-  const { id, nama, korem_id, kodim_id, luas, lokasi, alamat, peruntukan, status, asal_milik, bukti_pemilikan_url, sertifikat_luas, belum_sertifikat_luas, keterangan } = req.body;
+  // Ambil semua data dari body
+  const { 
+    id, nama, korem_id, kodim_id, luas, lokasi, alamat, peruntukan, 
+    status, asal_milik, sertifikat_luas, belum_sertifikat_luas, keterangan 
+  } = req.body;
+
+  // Siapkan data untuk dimasukkan ke database
+  const newAsset = {
+    id, nama, korem_id, kodim_id, luas, alamat, peruntukan, status, 
+    asal_milik, sertifikat_luas, belum_sertifikat_luas, keterangan
+  };
+
+  // Handle lokasi JSON
+  if (lokasi) {
+    try {
+      newAsset.lokasi = typeof lokasi === 'string' ? lokasi : JSON.stringify(lokasi);
+    } catch (e) {
+      return res.status(400).json({ message: 'Format data lokasi tidak valid.' });
+    }
+  }
+
+  // Cek apakah ada file yang diupload
+  if (req.file) {
+    // Ganti backslash dengan forward slash untuk URL
+    newAsset.bukti_pemilikan_url = req.file.path.split('\\').join('/');
+  }
+
+  // Hapus properti yang undefined agar tidak masuk ke query
+  Object.keys(newAsset).forEach(key => newAsset[key] === undefined && delete newAsset[key]);
+
+  const fields = Object.keys(newAsset).join(', ');
+  const placeholders = Object.keys(newAsset).map(() => '?').join(', ');
+  const values = Object.values(newAsset);
+
+  const sql = `INSERT INTO assets (${fields}) VALUES (${placeholders})`;
+
   try {
-    await pool.query(
-      `INSERT INTO assets (id, nama, korem_id, kodim_id, luas, lokasi, alamat, peruntukan, status, asal_milik, bukti_pemilikan_url, sertifikat_luas, belum_sertifikat_luas, keterangan)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, nama, korem_id, kodim_id, luas, JSON.stringify(lokasi), alamat, peruntukan, status, asal_milik, bukti_pemilikan_url, sertifikat_luas, belum_sertifikat_luas, keterangan]
-    );
-    res.status(201).json({ message: 'Aset berhasil dibuat.', id });
+    const [result] = await pool.query(sql, values);
+    const insertId = result.insertId;
+    
+    // Ambil data yang baru dibuat untuk dikirim kembali
+    const [newRows] = await pool.query('SELECT * FROM assets WHERE id = ?', [insertId]);
+    if (newRows.length > 0) {
+      res.status(201).json(parseAssetLocation(newRows[0]));
+    } else {
+      res.status(201).json({ message: 'Aset berhasil dibuat.', id: insertId });
+    }
   } catch (error) {
+    console.error("Database error:", error);
     res.status(500).json({ message: 'Gagal membuat aset.', error: error.message });
   }
 };
@@ -58,18 +97,58 @@ const createAsset = async (req, res) => {
 // Memperbarui aset
 const updateAsset = async (req, res) => {
   const { id } = req.params;
-  const { nama, korem_id, kodim_id, luas, lokasi, alamat, peruntukan, status, asal_milik, bukti_pemilikan_url, sertifikat_luas, belum_sertifikat_luas, keterangan } = req.body;
+  const { 
+    nama, korem_id, kodim_id, luas, lokasi, alamat, peruntukan, 
+    status, asal_milik, sertifikat_luas, belum_sertifikat_luas, keterangan 
+  } = req.body;
+
+  const updateData = {
+    nama, korem_id, kodim_id, luas, alamat, peruntukan, status, 
+    asal_milik, sertifikat_luas, belum_sertifikat_luas, keterangan
+  };
+  
+  // Handle lokasi JSON
+  if (lokasi) {
+    try {
+        updateData.lokasi = typeof lokasi === 'string' ? lokasi : JSON.stringify(lokasi);
+    } catch (e) {
+        return res.status(400).json({ message: 'Format data lokasi tidak valid.' });
+    }
+  }
+
+  // Cek apakah ada file baru yang diupload
+  if (req.file) {
+    // Ganti backslash dengan forward slash untuk URL
+    updateData.bukti_pemilikan_url = req.file.path.split('\\').join('/');
+  } else if (req.body.bukti_pemilikan_url) {
+    // Jika tidak ada file baru, gunakan URL lama dari body
+    updateData.bukti_pemilikan_url = req.body.bukti_pemilikan_url;
+  }
+
+  // Hapus properti yang undefined agar tidak mengupdate field yang tidak diinginkan
+  Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+
+  if (Object.keys(updateData).length === 0) {
+    return res.status(400).json({ message: 'Tidak ada data untuk diperbarui.' });
+  }
+
+  const fields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
+  const values = [...Object.values(updateData), id];
+
+  const sql = `UPDATE assets SET ${fields} WHERE id = ?`;
+
   try {
-    const [result] = await pool.query(
-      `UPDATE assets SET nama = ?, korem_id = ?, kodim_id = ?, luas = ?, lokasi = ?, alamat = ?, peruntukan = ?, status = ?, asal_milik = ?, bukti_pemilikan_url = ?, sertifikat_luas = ?, belum_sertifikat_luas = ?, keterangan = ?
-       WHERE id = ?`,
-      [nama, korem_id, kodim_id, luas, JSON.stringify(lokasi), alamat, peruntukan, status, asal_milik, bukti_pemilikan_url, sertifikat_luas, belum_sertifikat_luas, keterangan, id]
-    );
+    const [result] = await pool.query(sql, values);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Aset tidak ditemukan.' });
     }
-    res.status(200).json({ message: `Aset dengan ID ${id} berhasil diperbarui.` });
+    
+    // Ambil data terbaru untuk dikirim balik
+    const [updatedRows] = await pool.query('SELECT * FROM assets WHERE id = ?', [id]);
+    res.status(200).json(parseAssetLocation(updatedRows[0]));
+
   } catch (error) {
+    console.error("Database error:", error);
     res.status(500).json({ message: 'Gagal memperbarui aset.', error: error.message });
   }
 };
@@ -78,6 +157,7 @@ const updateAsset = async (req, res) => {
 const deleteAsset = async (req, res) => {
   const { id } = req.params;
   try {
+    // Di sini bisa ditambahkan logika untuk menghapus file terkait dari folder 'uploads' jika perlu
     const [result] = await pool.query('DELETE FROM assets WHERE id = ?', [id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Aset tidak ditemukan.' });
