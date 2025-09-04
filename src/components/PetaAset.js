@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -6,10 +6,77 @@ import {
   GeoJSON,
   Popup,
   LayersControl,
+  useMap,
 } from "react-leaflet";
 import { EditControl } from "react-leaflet-draw";
 import L from "leaflet";
 import area from "@turf/area";
+
+// Import leaflet-geosearch
+import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
+import "leaflet-geosearch/dist/geosearch.css";
+
+// --- Search Component ---
+const SearchControl = () => {
+  const map = useMap();
+  const boundaryLayerRef = useRef(null);
+
+  useEffect(() => {
+    const provider = new OpenStreetMapProvider({
+      params: {
+        polygon_geojson: 1, // Request polygon geometry
+      },
+    });
+
+    const searchControl = new GeoSearchControl({
+      provider: provider,
+      style: "bar",
+      showMarker: false, // We will show the boundary polygon instead
+      showPopup: false,
+      autoClose: true,
+      keepResult: true,
+      searchLabel: "Cari alamat atau wilayah...",
+    });
+
+    map.addControl(searchControl);
+
+    const onResult = (e) => {
+      // Hapus layer batas wilayah sebelumnya
+      if (boundaryLayerRef.current) {
+        map.removeLayer(boundaryLayerRef.current);
+      }
+
+      // Objek event `e` adalah objek hasilnya, `raw` ada langsung di dalamnya
+      if (e.raw && e.raw.geojson) {
+        const { geojson } = e.raw;
+        // Hanya gambar jika itu adalah Polygon atau MultiPolygon
+        if (geojson.type === "Polygon" || geojson.type === "MultiPolygon") {
+          const boundaryLayer = L.geoJSON(geojson, {
+            style: {
+              color: "var(--primary-accent, #5d8c7a)",
+              weight: 3,
+              opacity: 0.9,
+              fillColor: "var(--army-green-light, #6b8e6e)",
+              fillOpacity: 0.4, // Opasitas isian ditingkatkan agar lebih terlihat
+            },
+          });
+          boundaryLayerRef.current = boundaryLayer;
+          map.addLayer(boundaryLayer);
+        }
+      }
+    };
+
+    map.on("geosearch/showlocation", onResult);
+
+    // Cleanup function
+    return () => {
+      map.removeControl(searchControl);
+      map.off("geosearch/showlocation", onResult);
+    };
+  }, [map]);
+
+  return null; // Komponen ini tidak me-render apapun
+};
 
 // Function to convert asset location to GeoJSON feature
 const assetToGeoJSON = (asset) => ({
@@ -43,7 +110,6 @@ const PetaAset = ({
     if (layerType === "polygon") {
       const geoJSON = layer.toGeoJSON();
       const calculatedArea = area(geoJSON);
-      // Pass both geometry and calculated area
       onDrawingCreated({
         geometry: geoJSON.geometry.coordinates,
         area: calculatedArea,
@@ -52,11 +118,11 @@ const PetaAset = ({
   };
 
   const assetStyle = {
-    fillColor: "#2E7D32",
+    fillColor: "var(--army-green-dark, #2E7D32)", // Fallback color
     weight: 2,
     opacity: 1,
     color: "white",
-    fillOpacity: 0.5,
+    fillOpacity: 0.6,
   };
 
   const styleJateng = {
@@ -123,39 +189,49 @@ const PetaAset = ({
                   message: "<strong>Oh snap!</strong> you can't draw that!",
                 },
                 shapeOptions: {
-                  color: "#4CAF50",
+                  color: "var(--primary-accent, #5d8c7a)",
                 },
               },
-              // Disable other drawing tools
               rectangle: false,
               circle: false,
               circlemarker: false,
               marker: false,
               polyline: false,
             }}
-            edit={{ remove: false, edit: false }} // Disable editing existing layers for now
+            edit={{ remove: false, edit: false }}
           />
         )}
       </FeatureGroup>
 
       {/* Render existing assets as polygons */}
       {assets.map((asset) => {
-        if (!asset.lokasi) return null; // Don't render assets without location
+        if (!asset.lokasi) return null;
         const geoJsonData = assetToGeoJSON(asset);
         return (
           <GeoJSON key={asset.id} data={geoJsonData} style={assetStyle}>
             <Popup>
               <b>{asset.nama}</b>
               <br />
-              Kodim: {asset.kodim}
-              <br />
-              Luas: {asset.luas.toLocaleString("id-ID")} m²
-              <br />
+              {asset.kodim && (
+                <>
+                  Kodim: {asset.kodim}
+                  <br />
+                </>
+              )}
+              {asset.luas && (
+                <>
+                  Luas: {asset.luas.toLocaleString("id-ID")} m²
+                  <br />
+                </>
+              )}
               Status: {asset.status}
             </Popup>
           </GeoJSON>
         );
       })}
+
+      {/* Tambahkan komponen pencarian ke peta */}
+      <SearchControl />
     </MapContainer>
   );
 };

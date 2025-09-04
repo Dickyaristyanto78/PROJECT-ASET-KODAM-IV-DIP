@@ -37,6 +37,7 @@ const upload = multer({
 
 // Definisikan rute untuk aset, terapkan middleware multer
 router.get('/', assetController.getAllAssets);
+router.get('/download', assetController.downloadAssetsAsExcel);
 router.get('/:id', assetController.getAssetById);
 // Gunakan multer middleware untuk menangani upload file pada rute POST
 router.post('/', upload.single('bukti_pemilikan'), assetController.createAsset);

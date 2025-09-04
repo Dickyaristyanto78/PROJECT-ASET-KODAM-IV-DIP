@@ -299,6 +299,7 @@ const FilterPanelTop = ({
   onSelectKodim,
   onSelectStatus,
   onShowAll,
+  onDownloadExcel, // Tambah prop baru
   totalAssets,
   filteredAssets,
 }) => {
@@ -357,7 +358,7 @@ const FilterPanelTop = ({
               </select>
             </div>
           </Col>
-          <Col md={3}>
+          <Col md={2}>
             <div className="mb-3">
               <label className="form-label fw-bold">Status</label>
               <select
@@ -373,16 +374,24 @@ const FilterPanelTop = ({
               </select>
             </div>
           </Col>
-          <Col md={3}>
+          <Col md={4}>
             <div className="mb-3">
               <label className="form-label fw-bold">Aksi</label>
-              <div>
+              <div className="d-flex gap-2">
                 <Button
                   variant="outline-secondary"
                   onClick={onShowAll}
                   className="w-100"
                 >
                   Reset Filter
+                </Button>
+                <Button
+                  variant="success"
+                  onClick={onDownloadExcel}
+                  className="w-100 d-flex align-items-center justify-content-center gap-2"
+                >
+                  <FaDownload />
+                  <span>Unduh Excel</span>
                 </Button>
               </div>
             </div>
@@ -1093,6 +1102,50 @@ const DataAsetTanahPage = () => {
     setKodimList([]);
   };
 
+  const handleDownloadExcel = async () => {
+    const toastId = toast.loading("Mempersiapkan file Excel...");
+
+    try {
+      const params = new URLSearchParams();
+      if (selectedKorem) {
+        params.append('korem_id', selectedKorem.id);
+      }
+      if (selectedKodim) {
+        params.append('kodim_id', selectedKodim);
+      }
+      if (statusFilter) {
+        params.append('status', statusFilter);
+      }
+
+      const response = await axios.get(`${API_URL}/assets/download`, {
+        params,
+        responseType: 'blob', // Penting untuk menerima file
+      });
+
+      // Buat URL dari blob dan picu download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Buat nama file dengan tanggal
+      const date = new Date().toISOString().slice(0, 10);
+      link.setAttribute('download', `Data_Aset_Tanah_${date}.xlsx`);
+      
+      document.body.appendChild(link);
+      link.click();
+
+      // Hapus link setelah selesai
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("File Excel berhasil diunduh!", { id: toastId });
+
+    } catch (error) {
+      console.error("Gagal mengunduh file Excel:", error);
+      toast.error("Gagal mengunduh file Excel.", { id: toastId });
+    }
+  };
+
   // Handle view detail - popup modal
   const handleViewDetail = (asset) => {
     console.log("Asset data for detail:", asset);
@@ -1490,6 +1543,7 @@ const DataAsetTanahPage = () => {
             onSelectKodim={handleKodimChange}
             onSelectStatus={handleStatusChange}
             onShowAll={handleShowAll}
+            onDownloadExcel={handleDownloadExcel}
             totalAssets={assets.length}
             filteredAssets={filteredAssets.length}
           />

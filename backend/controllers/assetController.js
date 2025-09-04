@@ -1,4 +1,5 @@
 const pool = require('../db');
+const ExcelJS = require('exceljs');
 
 // Fungsi helper untuk parse lokasi JSON
 const parseAssetLocation = (asset) => {
@@ -168,10 +169,117 @@ const deleteAsset = async (req, res) => {
   }
 };
 
+// Fungsi untuk men-download data aset sebagai file Excel
+const downloadAssetsAsExcel = async (req, res) => {
+  try {
+    // Query dasar untuk mengambil data aset dengan join ke tabel korem dan kodim
+    let query = `
+      SELECT 
+        a.id, a.nama as nup, k.nama as nama_korem, ko.nama as nama_kodim, a.alamat, 
+        a.peruntukan, a.status, a.luas, a.sertifikat_luas, a.belum_sertifikat_luas,
+        a.asal_milik, a.keterangan, a.bukti_pemilikan_url, a.created_at, a.updated_at
+      FROM assets as a
+      LEFT JOIN korem as k ON a.korem_id = k.id
+      LEFT JOIN kodim as ko ON a.kodim_id = ko.id
+    `;
+
+    const { korem_id, kodim_id, status } = req.query;
+    const conditions = [];
+    const params = [];
+
+    if (korem_id) {
+      conditions.push('a.korem_id = ?');
+      params.push(korem_id);
+    }
+    if (kodim_id) {
+      conditions.push('a.kodim_id = ?');
+      params.push(kodim_id);
+    }
+    if (status) {
+      conditions.push('a.status = ?');
+      params.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY a.created_at DESC';
+
+    const [rows] = await pool.query(query, params);
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Data Aset Tanah');
+
+    // Definisikan kolom-kolom di Excel
+    worksheet.columns = [
+      { header: 'NUP', key: 'nup', width: 15 },
+      { header: 'Wilayah Korem', key: 'nama_korem', width: 25 },
+      { header: 'Wilayah Kodim', key: 'nama_kodim', width: 25 },
+      { header: 'Alamat', key: 'alamat', width: 40 },
+      { header: 'Peruntukan', key: 'peruntukan', width: 20 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Luas Peta (m²)', key: 'luas', width: 18 },
+      { header: 'Luas Sertifikat (m²)', key: 'sertifikat_luas', width: 22 },
+      { header: 'Luas Belum Sertifikat (m²)', key: 'belum_sertifikat_luas', width: 28 },
+      { header: 'Asal Kepemilikan', key: 'asal_milik', width: 20 },
+      { header: 'Keterangan', key: 'keterangan', width: 40 },
+      { header: 'URL Bukti Kepemilikan', key: 'bukti_pemilikan_url', width: 50 },
+      { header: 'Tanggal Dibuat', key: 'created_at', width: 20 },
+      { header: 'Tanggal Diperbarui', key: 'updated_at', width: 20 }
+    ];
+
+    // Beri style pada header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.fill = {
+            type: 'pattern',
+            pattern:'solid',
+            fgColor:{argb:'FFD3D3D3'} // Warna abu-abu muda
+        };
+        cell.border = {
+            top: {style:'thin'},
+            left: {style:'thin'},
+            bottom: {style:'thin'},
+            right: {style:'thin'}
+        };
+    });
+
+    // Tambahkan data baris
+    rows.forEach(asset => {
+      worksheet.addRow({
+        ...asset,
+        created_at: asset.created_at ? new Date(asset.created_at).toLocaleString('id-ID') : '',
+        updated_at: asset.updated_at ? new Date(asset.updated_at).toLocaleString('id-ID') : ''
+      });
+    });
+
+    // Set header untuk memberitahu browser bahwa ini adalah file Excel
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="Data_Aset_Tanah.xlsx"'
+    );
+
+    // Tulis workbook ke response
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (error) {
+    console.error('Gagal membuat file Excel:', error);
+    res.status(500).json({ message: 'Gagal membuat file Excel.', error: error.message });
+  }
+};
+
 module.exports = {
   getAllAssets,
   getAssetById,
   createAsset,
   updateAsset,
   deleteAsset,
+  downloadAssetsAsExcel,
 };

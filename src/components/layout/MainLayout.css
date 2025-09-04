@@ -1,3 +1,16 @@
+/* CSS Color Variables */
+:root {
+  --army-green-dark: #2c3e32; /* Darker green for sidebar */
+  --army-green-medium: #4a6b52; /* Medium green for active links/hovers */
+  --army-green-light: #6b8e6e;
+  --off-white-text: #e0e0e0; /* Soft white for text on dark backgrounds */
+  --light-grey-bg: #f5f5f5; /* Main content background */
+  --white-bg: #ffffff;
+  --grey-border: #dee2e6;
+  --dark-charcoal-text: #343a40;
+  --primary-accent: #5d8c7a; /* A slightly more vibrant green for primary actions */
+}
+
 .content-area {
   display: flex;
   flex: 1;
@@ -6,8 +19,8 @@
 
 .sidebar {
   width: 250px;
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
-  background-color: #343a40;
+  flex-shrink: 0;
+  background-color: var(--army-green-dark);
   padding: 20px;
   transition: margin-left 0.3s ease-in-out;
   margin-left: 0;
@@ -18,10 +31,10 @@
 }
 
 .main-content {
-  flex: 1; /* Take up remaining space */
+  flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background-color: #f4f6f9;
+  background-color: var(--light-grey-bg);
 }
 
 .hamburger-button {
@@ -32,17 +45,142 @@
   margin-right: 15px;
 }
 
+/* Sidebar Links */
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-links li a {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  color: var(--off-white-text);
+  text-decoration: none;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.sidebar-links li a:hover {
+  background-color: var(--army-green-medium);
+  color: var(--white-bg);
+}
+
+.sidebar-links li a.active {
+  background-color: var(--primary-accent);
+  color: var(--white-bg);
+  font-weight: bold;
+}
+
+.sidebar-links li a .icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--army-green-medium);
+}
+
+.sidebar-header img {
+  width: 50px;
+  height: 50px;
+  margin-right: 15px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-accent);
+}
+
+.sidebar-header h5 {
+  color: var(--white-bg);
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Dropdown */
+.dropdown-toggle::after {
+  display: none; /* Hide default caret */
+}
+
+.dropdown-menu {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-item .icon {
+  margin-right: 10px;
+}
+
+/* --- Bootstrap Overrides --- */
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary-accent);
+  border-color: var(--primary-accent);
+}
+
+.btn-primary:hover {
+  background-color: var(--army-green-medium);
+  border-color: var(--army-green-medium);
+}
+
+.btn-success {
+    background-color: var(--primary-accent);
+    border-color: var(--primary-accent);
+}
+
+.btn-success:hover {
+    background-color: var(--army-green-medium);
+    border-color: var(--army-green-medium);
+}
+
+/* Tables */
+.table-dark {
+  --bs-table-bg: var(--army-green-dark);
+  --bs-table-border-color: var(--army-green-medium);
+  color: var(--white-bg);
+}
+
+/* Card Headers */
+.card-header.bg-primary {
+  background-color: var(--primary-accent) !important;
+}
+
+.card-header.bg-success {
+    background-color: var(--primary-accent) !important;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid var(--grey-border);
+}
+
+/* Badges */
+.badge.bg-success {
+    background-color: var(--primary-accent) !important;
+}
+
 /* On smaller screens, the sidebar should overlay the content */
 @media (max-width: 768px) {
   .sidebar {
-    position: absolute; /* Take it out of flow to overlay */
+    position: absolute;
     height: 100%;
     z-index: 1000;
   }
 
   .sidebar.closed {
-    margin-left: 0; /* Reset margin */
-    transform: translateX(-100%); /* Use transform for overlay */
+    margin-left: 0;
+    transform: translateX(-100%);
   }
 
   .sidebar {

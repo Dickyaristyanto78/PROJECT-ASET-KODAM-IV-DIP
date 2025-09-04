@@ -615,6 +615,39 @@ const DataAsetYardipPage = () => {
     setSelectedAssetDetail(null);
   };
 
+  const handleDownloadExcel = async () => {
+    const toastId = toast.loading("Mempersiapkan file Excel...");
+
+    try {
+      const params = new URLSearchParams();
+      if (selectedBidang) {
+        params.append('bidang', selectedBidang);
+      }
+
+      const response = await axios.get(`${API_URL}/yarsip-assets/download`, {
+        params,
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      const date = new Date().toISOString().slice(0, 10);
+      link.setAttribute('download', `Data_Aset_Yardip_${date}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("File Excel berhasil diunduh!", { id: toastId });
+
+    } catch (error) {
+      console.error("Gagal mengunduh file Excel Yarsip:", error);
+      toast.error("Gagal mengunduh file Excel.", { id: toastId });
+    }
+  };
+
   // Prepare current asset for map display during editing
   const prepareEditAssetForMap = () => {
     if (!editingAsset) return [];
@@ -694,7 +727,7 @@ const DataAsetYardipPage = () => {
         <Col md={12}>
           <div className="mb-3">
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <label>Filter Bidang:</label>
                 <select
                   className="form-select"
@@ -709,8 +742,14 @@ const DataAsetYardipPage = () => {
                   ))}
                 </select>
               </Col>
-              <Col md={6} className="d-flex align-items-end">
-                <div className="text-muted">
+              <Col md={4} className="d-flex align-items-end">
+                <Button variant="success" onClick={handleDownloadExcel} className="w-100">
+                  <i className="fas fa-download me-2"></i>
+                  Unduh Excel
+                </Button>
+              </Col>
+              <Col md={4} className="d-flex align-items-end">
+                <div className="text-muted w-100 text-end">
                   <small>
                     Menampilkan {filteredAssets.length} dari {assets.length}{" "}
                     aset yardip
