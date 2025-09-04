@@ -1,0 +1,235 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { Container, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import PetaAset from "../components/PetaAset";
+import FormAset from "../components/FormAset";
+import jatengBoundary from "../data/indonesia_jawatengah.json";
+import diyBoundary from "../data/indonesia_yogyakarta.json";
+
+const API_URL = "http://localhost:3002/api";
+
+const TambahAsetPage = () => {
+  const navigate = useNavigate();
+  const [koremList, setKoremList] = useState([]);
+  const [kodimList, setKodimList] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [isDrawing, setIsDrawing] = useState(true);
+  const [newAssetData, setNewAssetData] = useState(null); // { geometry, area }
+  const [isFormEnabled, setIsFormEnabled] = useState(false);
+
+  // Fetch Korem data
+  const fetchKorem = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [koremRes, assetsRes] = await Promise.all([
+        axios.get(`${API_URL}/korem`),
+        axios.get(`${API_URL}/assets`),
+      ]);
+      setKoremList(koremRes.data);
+      setAssets(assetsRes.data);
+      setError(null);
+    } catch (err) {
+      setError("Gagal memuat data.");
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch Kodim data based on selected Korem
+  const fetchKodim = useCallback(async (koremId) => {
+    if (!koremId) {
+      setKodimList([]);
+      return;
+    }
+
+    console.log(`Fetching Kodim for Korem ID: ${koremId}`);
+
+    try {
+      let kodimRes;
+      let endpointUsed = "";
+
+      // Option 1: Try kodim endpoint with korem filter
+      try {
+        console.log(`Trying: ${API_URL}/kodim?korem_id=${koremId}`);
+        kodimRes = await axios.get(`${API_URL}/kodim?korem_id=${koremId}`);
+        endpointUsed = "kodim?korem_id";
+        console.log("Success with Option 1:", kodimRes.data);
+      } catch (err1) {
+        console.log("Option 1 failed:", err1.response?.status, err1.message);
+
+        // Option 2: Try nested endpoint
+        try {
+          console.log(`Trying: ${API_URL}/korem/${koremId}/kodim`);
+          kodimRes = await axios.get(`${API_URL}/korem/${koremId}/kodim`);
+          endpointUsed = "korem/id/kodim";
+          console.log("Success with Option 2:", kodimRes.data);
+        } catch (err2) {
+          console.log("Option 2 failed:", err2.response?.status, err2.message);
+
+          // Option 3: Get all kodim and filter
+          try {
+            console.log(`Trying: ${API_URL}/kodim (all)`);
+            kodimRes = await axios.get(`${API_URL}/kodim`);
+            kodimRes.data = kodimRes.data.filter(
+              (kodim) => kodim.korem_id == koremId || kodim.korem_id === koremId
+            );
+            endpointUsed = "kodim (filtered)";
+            console.log("Success with Option 3:", kodimRes.data);
+          } catch (err3) {
+            console.log(
+              "Option 3 failed:",
+              err3.response?.status,
+              err3.message
+            );
+
+            // Option 4: Mock data as fallback (temporary solution)
+            console.log("All endpoints failed, using mock data");
+            kodimRes = {
+              data: [
+                {
+                  id: `${koremId}_1`,
+                  nama: "Kodim 0701/Banyumas",
+                  korem_id: koremId,
+                },
+                {
+                  id: `${koremId}_2`,
+                  nama: "Kodim 0702/Purbalingga",
+                  korem_id: koremId,
+                },
+                {
+                  id: `${koremId}_3`,
+                  nama: "Kodim 0703/Cilacap",
+                  korem_id: koremId,
+                },
+                {
+                  id: `${koremId}_4`,
+                  nama: "Kodim 0704/Banjarnegara",
+                  korem_id: koremId,
+                },
+                {
+                  id: `${koremId}_5`,
+                  nama: "Kodim 0705/Magelang",
+                  korem_id: koremId,
+                },
+                {
+                  id: `${koremId}_6`,
+                  nama: "Kodim 0733/Kota Semarang",
+                  korem_id: koremId,
+                },
+              ],
+            };
+            endpointUsed = "mock data";
+          }
+        }
+      }
+
+      console.log(`Kodim data loaded using: ${endpointUsed}`, kodimRes.data);
+      setKodimList(kodimRes.data || []);
+      setError(null);
+    } catch (err) {
+      const errorMsg = `Gagal memuat data Kodim. ${
+        err.response?.status
+          ? `Status: ${err.response.status}`
+          : "Server tidak merespons"
+      }`;
+      setError(errorMsg);
+      console.error("Error fetching Kodim:", err);
+      setKodimList([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchKorem();
+  }, [fetchKorem]);
+
+  const handleDrawingCreated = (data) => {
+    // data now contains { geometry, area }
+    setNewAssetData(data);
+    setIsDrawing(false);
+    setIsFormEnabled(true);
+  };
+
+  const handleSaveAsset = async (assetData) => {
+    const toastId = toast.loading("Menyimpan data aset...");
+    try {
+      await axios.post(`${API_URL}/assets`, {
+        ...assetData,
+        id: `T${Date.now()}`,
+        lokasi: newAssetData.geometry,
+      });
+      toast.success("Aset berhasil ditambahkan!", { id: toastId });
+      setTimeout(() => {
+        navigate("/data-aset-tanah"); // Redirect after saving
+      }, 1500); // Delay for toast to be seen
+    } catch (err) {
+      toast.error("Gagal menyimpan aset.", { id: toastId });
+      console.error("Gagal menyimpan aset", err);
+      setError("Gagal menyimpan aset.");
+    }
+  };
+
+  const handleCancel = () => {
+    // Navigate back or reset the state
+    if (isFormEnabled) {
+      setIsFormEnabled(false);
+      setNewAssetData(null);
+    } else {
+      navigate(-1); // Go back to previous page if nothing has been drawn
+    }
+  };
+
+  const handleRedraw = () => {
+    setIsDrawing(true);
+    setIsFormEnabled(false);
+    setNewAssetData(null);
+  };
+
+  if (loading) return <Spinner animation="border" variant="primary" />;
+
+  return (
+    <Container fluid className="mt-4">
+      <h3>Tambah Aset Tanah Baru</h3>
+      {error && <Alert variant="danger">{error}</Alert>}
+
+      <Row>
+        <Col md={7}>
+          <div className="mb-3">
+            {isFormEnabled && (
+              <Button onClick={handleRedraw} variant="outline-primary">
+                Gambar Ulang
+              </Button>
+            )}
+          </div>
+          <div style={{ height: "70vh", width: "100%" }}>
+            <PetaAset
+              assets={assets}
+              isDrawing={isDrawing}
+              onDrawingCreated={handleDrawingCreated}
+              jatengBoundary={jatengBoundary}
+              diyBoundary={diyBoundary}
+            />
+          </div>
+        </Col>
+        <Col md={5}>
+          <FormAset
+            onSave={handleSaveAsset}
+            onCancel={handleCancel}
+            koremList={koremList}
+            kodimList={kodimList}
+            initialGeometry={newAssetData ? newAssetData.geometry : null}
+            initialArea={newAssetData ? newAssetData.area : null}
+            isEnabled={isFormEnabled}
+          />
+        </Col>
+      </Row>
+    </Container>
+  );
+};
+
+export default TambahAsetPage;

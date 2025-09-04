@@ -1,0 +1,423 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "password123",
+      "name": "Administrator Utama"
+    }
+  ],
+  "assets": [
+    {
+      "id": "T1756785779986",
+      "nama": "Semarang Tank",
+      "korem_id": "5",
+      "kodim": "",
+      "luas": 398973757.42,
+      "lokasi_nama": "Semarang Banyumanik",
+      "kib_kode_barang": "1.21.21.212.121",
+      "kode_barang": "1.21.21.212.121",
+      "nomor_registrasi": "a55d123",
+      "no_registrasi": "a55d123",
+      "registrasi": "a55d123",
+      "nomorRegistrasi": "a55d123",
+      "noRegistrasi": "a55d123",
+      "no_reg": "a55d123",
+      "alamat": "Semarang Banyumanik",
+      "peruntukan": "Kantor Badan Pemerintahan",
+      "fungsi": "Kantor Badan Pemerintahan",
+      "status": "Aktif",
+      "asal_milik": "Pembelian",
+      "bukti_pemilikan": "",
+      "bukti_kepemilikan": "",
+      "bukti_pemilikan_url": "",
+      "pemilikan_sertifikat": "Ya",
+      "sertifikat_bidang": "11",
+      "sertifikat_luas": "10000",
+      "belum_sertifikat_bidang": "11",
+      "belum_sertifikat_luas": "99.98",
+      "keterangan": "tanah milik tentara",
+      "keterangan_bukti_pemilikan": "gambar dumy",
+      "atas_nama_pemilik_sertifikat": "",
+      "lokasi": [
+        [
+          [
+            110.318719,
+            -6.938284
+          ],
+          [
+            110.270614,
+            -6.973015
+          ],
+          [
+            110.28642,
+            -7.014551
+          ],
+          [
+            110.272676,
+            -7.034977
+          ],
+          [
+            110.311159,
+            -7.109186
+          ],
+          [
+            110.339335,
+            -7.105782
+          ],
+          [
+            110.347582,
+            -7.079232
+          ],
+          [
+            110.352392,
+            -7.111228
+          ],
+          [
+            110.381255,
+            -7.125524
+          ],
+          [
+            110.417677,
+            -7.107824
+          ],
+          [
+            110.426611,
+            -7.117355
+          ],
+          [
+            110.453412,
+            -7.080593
+          ],
+          [
+            110.487085,
+            -7.090124
+          ],
+          [
+            110.500829,
+            -7.063573
+          ],
+          [
+            110.466469,
+            -7.03702
+          ],
+          [
+            110.509763,
+            -6.975738
+          ],
+          [
+            110.502204,
+            -6.948499
+          ],
+          [
+            110.462346,
+            -6.948499
+          ],
+          [
+            110.448601,
+            -6.956671
+          ],
+          [
+            110.423862,
+            -6.93556
+          ],
+          [
+            110.370259,
+            -6.955309
+          ],
+          [
+            110.318719,
+            -6.938284
+          ]
+        ]
+      ],
+      "bukti_pemilikan_file": {},
+      "bukti_pemilikan_filename": "pp dc.jpg",
+      "luas_total": 10099.98,
+      "luas_gambar": null,
+      "kodim_id": ""
+    },
+    {
+      "id": "T1756870749993",
+      "nama": "coba",
+      "korem_id": 2,
+      "kodim": "",
+      "luas": 423314960.95,
+      "lokasi_nama": "Lokasi dari Peta",
+      "kib_kode_barang": "23452",
+      "kode_barang": "23452",
+      "nomor_registrasi": "434343",
+      "no_registrasi": "434343",
+      "registrasi": "434343",
+      "nomorRegistrasi": "434343",
+      "noRegistrasi": "434343",
+      "no_reg": "434343",
+      "alamat": "dfgd",
+      "peruntukan": "dfg",
+      "fungsi": "dfg",
+      "status": "Aktif",
+      "asal_milik": "Pembelian",
+      "bukti_pemilikan": "",
+      "bukti_kepemilikan": "",
+      "bukti_pemilikan_url": "",
+      "pemilikan_sertifikat": "Ya",
+      "sertifikat_bidang": "3",
+      "sertifikat_luas": "0.04",
+      "belum_sertifikat_bidang": "",
+      "belum_sertifikat_luas": "",
+      "keterangan": "",
+      "keterangan_bukti_pemilikan": "",
+      "atas_nama_pemilik_sertifikat": "",
+      "lokasi": [
+        [
+          [
+            110.349452,
+            -7.113888
+          ],
+          [
+            110.349452,
+            -7.186147
+          ],
+          [
+            110.251943,
+            -7.187511
+          ],
+          [
+            110.28353,
+            -7.251583
+          ],
+          [
+            110.331598,
+            -7.295199
+          ],
+          [
+            110.315118,
+            -7.310191
+          ],
+          [
+            110.378292,
+            -7.334723
+          ],
+          [
+            110.442137,
+            -7.453451
+          ],
+          [
+            110.475785,
+            -7.361476
+          ],
+          [
+            110.41537,
+            -7.109648
+          ],
+          [
+            110.349452,
+            -7.113888
+          ]
+        ]
+      ],
+      "luas_total": 0.04,
+      "luas_gambar": 423314960.9547525
+    }
+  ],
+  "yarsip_assets": [
+    {
+      "pengelola": "nanda",
+      "bidang": "Tanah",
+      "kabkota": "jogja",
+      "kecamatan": "jogja",
+      "kelurahan": "karangsemut",
+      "peruntukan": "majeed",
+      "status": "Tidak Aktif",
+      "keterangan": "yaaa",
+      "type": "yarsip",
+      "lokasi": [
+        [
+          [
+            111.188279,
+            -7.162988
+          ],
+          [
+            110.463244,
+            -7.685572
+          ],
+          [
+            111.836416,
+            -7.837873
+          ],
+          [
+            111.188279,
+            -7.162988
+          ]
+        ]
+      ],
+      "area": 5075509079.112641,
+      "updated_at": "2025-09-02T01:08:51.267Z",
+      "id": "Y1756750648747"
+    },
+    {
+      "id": "Y1756752447188",
+      "pengelola": "mjeed",
+      "bidang": "Fasilitas Umum",
+      "kabkota": "smf",
+      "kecamatan": "smg",
+      "kelurahan": "smg",
+      "peruntukan": "majeed",
+      "status": "Cadangan",
+      "keterangan": "ass",
+      "type": "yarsip",
+      "lokasi": [
+        [
+          [
+            108.786376,
+            -7.108794
+          ],
+          [
+            108.791866,
+            -7.621007
+          ],
+          [
+            109.368349,
+            -7.201472
+          ],
+          [
+            108.786376,
+            -7.108794
+          ]
+        ]
+      ],
+      "area": 1824538506.7253392,
+      "created_at": "2025-09-01T18:47:27.188Z",
+      "updated_at": "2025-09-01T18:47:27.188Z"
+    },
+    {
+      "pengelola": "Adytya",
+      "bidang": "Perkantoran",
+      "kabkota": "semarang",
+      "kecamatan": "semarang",
+      "kelurahan": "kaliwungu",
+      "peruntukan": "nanda",
+      "status": "Aktif",
+      "keterangan": "ini test terakhir",
+      "type": "yarsip",
+      "lokasi": [
+        [
+          [
+            108.787974,
+            -6.900157
+          ],
+          [
+            108.584745,
+            -7.538115
+          ],
+          [
+            109.67779,
+            -7.685206
+          ],
+          [
+            109.771165,
+            -6.883787
+          ],
+          [
+            108.787974,
+            -6.900157
+          ]
+        ]
+      ],
+      "area": 9282406394.259338,
+      "created_at": "2025-09-01T18:50:13.052Z",
+      "updated_at": "2025-09-01T18:50:49.445Z",
+      "id": "Y1756752613052"
+    },
+    {
+      "id": "Y1756777202287",
+      "pengelola": "Yayasan Rumpun Diponegoro",
+      "bidang": "Tanah",
+      "kabkota": "demak",
+      "kecamatan": "bonang",
+      "kelurahan": "moro",
+      "peruntukan": "kantor puat",
+      "status": "Aktif",
+      "keterangan": "ada",
+      "type": "yarsip",
+      "lokasi": [
+        [
+          [
+            109.325629,
+            -7.298402
+          ],
+          [
+            110.155779,
+            -7.260294
+          ],
+          [
+            110.100802,
+            -7.847878
+          ],
+          [
+            109.325629,
+            -7.298402
+          ]
+        ]
+      ],
+      "area": 2976525819.193603,
+      "created_at": "2025-09-02T01:40:02.287Z",
+      "updated_at": "2025-09-02T01:40:02.287Z"
+    }
+  ],
+  "korem": [
+    {
+      "id": "1",
+      "nama": "Korem 071/Wijayakusuma",
+      "wilayah": "Banyumas dan sekitarnya",
+      "kodim": [
+        "Kodim 0701/Banyumas",
+        "Kodim 0702/Purbalingga",
+        "Kodim 0703/Cilacap",
+        "Kodim 0704/Banjarnegara"
+      ]
+    },
+    {
+      "id": "2",
+      "nama": "Korem 072/Pamungkas",
+      "wilayah": "Yogyakarta dan sekitarnya",
+      "kodim": [
+        "Kodim 0734/Yogyakarta",
+        "Kodim 0732/Sleman",
+        "Kodim 0729/Bantul",
+        "Kodim 0730/Gunungkidul",
+        "Kodim 0731/Kulon Progo"
+      ]
+    },
+    {
+      "id": "3",
+      "nama": "Korem 073/Makutarama",
+      "wilayah": "Salatiga dan sekitarnya",
+      "kodim": [
+        "Kodim 0714/Salatiga",
+        "Kodim 0715/Kendal",
+        "Kodim 0716/Demak",
+        "Kodim 0717/Purwodadi",
+        "Kodim 0718/Pati"
+      ]
+    },
+    {
+      "id": "4",
+      "nama": "Korem 074/Warastratama",
+      "wilayah": "Surakarta dan sekitarnya",
+      "kodim": [
+        "Kodim 0735/Surakarta",
+        "Kodim 0723/Sukoharjo",
+        "Kodim 0724/Boyolali",
+        "Kodim 0725/Sragen",
+        "Kodim 0726/Sukowati"
+      ]
+    },
+    {
+      "id": "5",
+      "nama": "Kodim 0733/Kota Semarang",
+      "wilayah": "Semarang",
+      "kodim": []
+    }
+  ]
+}
